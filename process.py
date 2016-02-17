@@ -54,8 +54,10 @@ def main(argv):
                 print('Input video %s unreadable or does not exist.') % inputfile
                 sys.exit(2)
             
-            input_filename, input_file_extension = os.path.splitext(inputfile)  # set default output filename if none is given
+            # split up the input filename for the transforms filename
+            input_filename, input_file_extension = os.path.splitext(inputfile)
             
+            # set default output filename if none is given
             outputfile = input_filename + extension + input_file_extension
             
         elif opt in ("-o", "--output"):
@@ -65,23 +67,27 @@ def main(argv):
 
     print 'Calling ffmpeg vidstab analysis...'
     
+    
     try:
         subprocess.call(shlex.split("%s -i %s -vf %s:result=%s.trf -f null -" % (ffmpeg_bin, inputfile, vidstab_detection_options, input_filename)))
+        
     except subprocess.CalledProcessError:
         print 'ffmpeg analysis call failed.'
-        sys.exit(2)
+        
     else:
-         try:
-             print 'Done. Calling second stage of vidstab processing and transcoding...'
-             subprocess.call(shlex.split("%s -i %s -vf %s:input=%s.trf %s %s" % (ffmpeg_bin, inputfile, vidstab_transform_options, input_filename, ffmpeg_transcode_options, outputfile)))
-         except subprocess.CalledProcessError:
-             print 'Transform and transcode pass failed.'
-             # Cleanup in Aisle 2; remove partially encoded file if it exists
-            
-             sys.exit(2)
+    	# detection worked; do the transform/transcode pass
+    	print 'Done. Calling second stage of vidstab processing and transcoding...'
+        try:
+            subprocess.call(shlex.split("%s -i %s -vf %s:input=%s.trf %s %s" % (ffmpeg_bin, inputfile, vidstab_transform_options, input_filename, ffmpeg_transcode_options, outputfile)))
+        except subprocess.CalledProcessError:
+            print 'Transform and transcode pass failed.'
+            # Remove partially encoded file if it exists
+            if os.path.isfile(outputfile): os.remove(outputfile)
+            sys.exit(2) 
+        else:
+            # The transform/transcode worked. We no longer need the TRF file.
+    		os.remove(input_filename + ".trf")
 
-    os.remove(input_filename + ".trf")      # remove transformation file
-    
     
 if __name__ == "__main__":
     main(sys.argv[1:])
