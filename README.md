@@ -9,18 +9,18 @@ This is not (presently) intended for use on a multi-user, untrusted systems, etc
 
 ## Todos / goals
 
-[x] Given a filename, run video stabilization analysis, then transcode to youtube-friendly format.
-[] Command line switch to strip audio tracks from final file
-[] Command line switch to crop frame to remove times/location/speed stamps from final file
+- [x] Given a filename, run video stabilization analysis, then transcode to youtube-friendly format.
+- [ ] Command line switch to strip audio tracks from final file
+- [ ] Command line switch to crop frame to remove times/location/speed stamps from final file
 
 
-[] Add directory processing
-[] Be cron-friendly
-[] Provide option to do something with locked files (many cameras can lock the current file when a button is pushed during recording, or do so when there is an impact/shock.)
+- [ ] Add directory processing
+- [ ] Be cron-friendly
+- [ ] Provide option to do something with locked files (many cameras can lock the current file when a button is pushed during recording, or do so when there is an impact/shock.)
 
-[] Add directory watching (PyInotify or similar)
+- [ ] Add directory watching (PyInotify or similar)
 
-[] Alert the user when videos have invalid dates or are unexpected dimensions (some cameras lose their date/time and other settings)
-[] Drive a multicolor LED on a Pi or Beaglebone Black to indicate status
+- [ ] Alert the user when videos have invalid dates or are unexpected dimensions (some cameras lose their date/time and other settings)
+- [ ] Drive a multicolor LED on a Pi or Beaglebone Black to indicate status
 
-[] 3D printed case for an SBC with bicycle helmet hook and mount for attaching to a bicycle rack
+- [ ] 3D printed case for an SBC with bicycle helmet hook and mount for attaching to a bicycle rack
