@@ -60,6 +60,10 @@ def main(argv):
             # set default output filename if none is given
             outputfile = input_filename + extension + input_file_extension
             
+            # set transform file name
+            
+            transform_file = input_filename + ".trf"
+            
         elif opt in ("-o", "--output"):
             outputfile = arg
     
@@ -73,7 +77,8 @@ def main(argv):
         
     except subprocess.CalledProcessError:
         print 'ffmpeg analysis call failed.'
-        
+        if os.path.isfile(transform_file): os.remove(transform_file)
+        sys.exit(2)
     else:
     	# detection worked; do the transform/transcode pass
     	print 'Done. Calling second stage of vidstab processing and transcoding...'
@@ -86,7 +91,7 @@ def main(argv):
             sys.exit(2) 
         else:
             # The transform/transcode worked. We no longer need the TRF file.
-    		os.remove(input_filename + ".trf")
+    		os.remove(transform_file)
 
     
 if __name__ == "__main__":
