@@ -90,7 +90,7 @@ def main(argv):
     	save_trf = True
     	save_output = False
     	
-    	print 'Calling second stage of vidstab processing and transcoding...'
+    	print 'Calling ffmpeg transform and transcode pass...'
         try:
             save_output = False
             subprocess.call(shlex.split("%s -i %s -vf %s:input=%s.trf %s %s" % (ffmpeg_bin, input_file, vidstab_transform_options, input_basename, ffmpeg_transcode_options, output_file)))
