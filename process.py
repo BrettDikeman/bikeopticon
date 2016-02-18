@@ -12,8 +12,8 @@ import getopt, os, shlex, subprocess, sys
 
 def main(argv):
 
-    inputfile = ''
-    outputfile = ''
+    input_file = ''
+    output_file = ''
     extension = 'stabyt'                            # suffix added to processed files (STABilized YouTube ready? Ugh...)
     ffmpeg_bin = '/usr/local/bin/ffmpeg'
     
@@ -35,63 +35,78 @@ def main(argv):
     try:
         opts, args = getopt.getopt(argv,"hi:o:",["input=","output="])
     except getopt.GetoptError:
-        print 'Unrecognized options. process.py -i <inputfile> -o <outputfile>'
+        print 'Unrecognized options. process.py -i <input_file> -o <output_file>'
         sys.exit(2)
         
 
     for opt, arg in opts:
         if opt in ("-h", "--help"):
-            print 'process.py -i <inputfile> -o <outputfile>'
+            print 'process.py -i <input_file> -o <output_file>'
             sys.exit()
             
         elif opt in ("-i", "--input"):
-            inputfile = arg
+            input_file = arg
 
             try:
-                f = open(inputfile)
+                f = open(input_file)
                 f.close()
             except IOError as e:
-                print('Input video %s unreadable or does not exist.') % inputfile
+                print('Input video %s unreadable or does not exist.') % input_file
                 sys.exit(2)
             
             # split up the input filename for the transforms filename
-            input_filename, input_file_extension = os.path.splitext(inputfile)
+            input_basename, input_file_extension = os.path.splitext(input_file)
             
             # set default output filename if none is given
-            outputfile = input_filename + extension + input_file_extension
+            output_file = input_basename + extension + input_file_extension
             
             # set transform file name
             
-            transform_file = input_filename + ".trf"
+            transform_file = input_basename + ".trf"
             
         elif opt in ("-o", "--output"):
-            outputfile = arg
+            output_file = arg
     
-    print 'Input file is', inputfile, '; output file is', outputfile
-
-    print 'Calling ffmpeg vidstab analysis...'
+    print 'Input file is', input_file, '; output file is', output_file
     
+    # Start ffmpeg work
     
+    save_trf = False
     try:
-        subprocess.call(shlex.split("%s -i %s -vf %s:result=%s.trf -f null -" % (ffmpeg_bin, inputfile, vidstab_detection_options, input_filename)))
+    	# Does the transform file already exist? If so, skip the first pass.   
+        if os.path.isfile(transform_file):
+            print 'TRF file exists, not re-analyzing...'
+        else:
+            print 'Calling ffmpeg vidstab analysis...'
+            subprocess.call(shlex.split("%s -i %s -vf %s:result=%s.trf -f null -" % (ffmpeg_bin, input_file, vidstab_detection_options, input_basename)))
         
     except subprocess.CalledProcessError:
         print 'ffmpeg analysis call failed.'
         if os.path.isfile(transform_file): os.remove(transform_file)
         sys.exit(2)
+        
     else:
-    	# detection worked; do the transform/transcode pass
-    	print 'Done. Calling second stage of vidstab processing and transcoding...'
+    	# detection worked; mark the TRF file as valid and do the transform/transcode pass
+    	save_trf = True
+    	save_output = False
+    	
+    	print 'Calling second stage of vidstab processing and transcoding...'
         try:
-            subprocess.call(shlex.split("%s -i %s -vf %s:input=%s.trf %s %s" % (ffmpeg_bin, inputfile, vidstab_transform_options, input_filename, ffmpeg_transcode_options, outputfile)))
+            save_output = False
+            subprocess.call(shlex.split("%s -i %s -vf %s:input=%s.trf %s %s" % (ffmpeg_bin, input_file, vidstab_transform_options, input_basename, ffmpeg_transcode_options, output_file)))
         except subprocess.CalledProcessError:
             print 'Transform and transcode pass failed.'
-            # Remove partially encoded file if it exists
-            if os.path.isfile(outputfile): os.remove(outputfile)
             sys.exit(2) 
         else:
-            # The transform/transcode worked. We no longer need the TRF file.
-    		os.remove(transform_file)
+        	# Transform/transcode worked, transform file no longer needed, keep the output
+        	save_trf = False
+        	save_output = True
+        	
+    finally:
+    	    if not save_trf:
+    		    if os.path.isfile(transform_file): os.remove(transform_file)
+    	    if not save_output:
+    		    if os.path.isfile(output_file): os.remove(output_file)
 
     
 if __name__ == "__main__":
