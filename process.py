@@ -14,21 +14,21 @@ def main(argv):
 
     input_file = ''
     output_file = ''
-    extension = 'stabyt'                            # suffix added to processed files (STABilized YouTube ready? Ugh...)
-    ffmpeg_bin = '/usr/local/bin/ffmpeg'
+    EXTENSION = 'stabyt'                            # suffix added to processed files (STABilized YouTube ready? Ugh...)
+    FFMPEG_BIN = '/usr/local/bin/ffmpeg'
     
     # Options to pass to vidstab on the analysis pass, with no leading/trailing spaces.
-    vidstab_detection_options = 'vidstabdetect=shakiness=10:accuracy=15:stepsize=12'
+    VIDSTAB_DETECTION_OPTIONS = 'vidstabdetect=shakiness=10:accuracy=15:stepsize=12'
     
     # Options for the transform pass, with no leading/trailing spaces.
-    vidstab_transform_options = 'vidstabtransform=smoothing=30'
+    VIDSTAB_TRANSFORM_OPTIONS = 'vidstabtransform=smoothing=30'
     
     # Transcoding options. By default, youtube-friendly with no audio (-an).
     # Thanks to Jernej Virag; see https://www.virag.si/2015/06/encoding-videos-for-youtube-with-ffmpeg/
 
-    ffmpeg_transcode_options = "-codec:v libx264 -crf 21 -bf 2 -flags +cgop -pix_fmt yuv420p -an -movflags faststart" 
+    FFMPEG_TRANSCODE_OPTIONS = "-codec:v libx264 -crf 21 -bf 2 -flags +cgop -pix_fmt yuv420p -an -movflags faststart" 
 
-    if not "enable-libvidstab" in subprocess.check_output([ffmpeg_bin, '-version']):
+    if not "enable-libvidstab" in subprocess.check_output([FFMPEG_BIN, '-version']):
 	    print 'You do not have vidstab installed for the specified ffmpeg binary.'
 	    sys.exit(2)
 
@@ -58,7 +58,7 @@ def main(argv):
             input_basename, input_file_extension = os.path.splitext(input_file)
             
             # set default output filename if none is given
-            output_file = input_basename + extension + input_file_extension
+            output_file = input_basename + EXTENSION + input_file_extension
             
             # set transform file name
             
@@ -78,7 +78,7 @@ def main(argv):
             print 'TRF file exists, not re-analyzing...'
         else:
             print 'Calling ffmpeg vidstab analysis...'
-            subprocess.call(shlex.split("%s -i %s -vf %s:result=%s.trf -f null -" % (ffmpeg_bin, input_file, vidstab_detection_options, input_basename)))
+            subprocess.call(shlex.split("%s -i %s -vf %s:result=%s.trf -f null -" % (FFMPEG_BIN, input_file, VIDSTAB_DETECTION_OPTIONS, input_basename)))
         
     except subprocess.CalledProcessError:
         print 'ffmpeg analysis call failed.'
@@ -90,10 +90,10 @@ def main(argv):
     	save_trf = True
     	save_output = False
     	
-    	print 'Calling ffmpeg transform and transcode pass...'
+    	print 'Calling ffmpeg transform and transcode passx``...'
         try:
             save_output = False
-            subprocess.call(shlex.split("%s -i %s -vf %s:input=%s.trf %s %s" % (ffmpeg_bin, input_file, vidstab_transform_options, input_basename, ffmpeg_transcode_options, output_file)))
+            subprocess.call(shlex.split("%s -i %s -vf %s:input=%s.trf %s %s" % (FFMPEG_BIN, input_file, VIDSTAB_TRANSFORM_OPTIONS, input_basename, FFMPEG_TRANSCODE_OPTIONS, output_file)))
         except subprocess.CalledProcessError:
             print 'Transform and transcode pass failed.'
             sys.exit(2) 
