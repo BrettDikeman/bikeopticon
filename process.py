@@ -9,24 +9,13 @@
 
 
 import getopt, os, shlex, subprocess, sys
+import utils
+import config
 
 def main(argv):
 
     input_file = ''
     output_file = ''
-    EXTENSION = 'stabyt'                            # suffix added to processed files (STABilized YouTube ready? Ugh...)
-    FFMPEG_BIN = '/usr/local/bin/ffmpeg'
-    
-    # Options to pass to vidstab on the analysis pass, with no leading/trailing spaces.
-    VIDSTAB_DETECTION_OPTIONS = "vidstabdetect=shakiness=10:accuracy=15:stepsize=12"
-    
-    # Options for the transform pass, with no leading/trailing spaces.
-    VIDSTAB_TRANSFORM_OPTIONS = "vidstabtransform=smoothing=30"
-    
-    # Transcoding options. By default, youtube-friendly with no audio (-an).
-    # Thanks to Jernej Virag; see https://www.virag.si/2015/06/encoding-videos-for-youtube-with-ffmpeg/
-
-    FFMPEG_TRANSCODE_OPTIONS = "-codec:v libx264 -crf 21 -bf 2 -flags +cgop -pix_fmt yuv420p -an -movflags faststart"
 
     if not 'enable-libvidstab' in subprocess.check_output([FFMPEG_BIN, '-version']):
 	    print "You do not have vidstab installed for the specified ffmpeg binary."
